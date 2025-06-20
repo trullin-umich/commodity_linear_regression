@@ -6,3 +6,7 @@ minima:
 
 plugins:
   - jekyll-remote-theme
+
+title: Commodity Linear Regression
+description: Final project for EECS 398: Practical Data Science
+github_repo: https://github.com/trullin-umich/commodity_linear_regression
