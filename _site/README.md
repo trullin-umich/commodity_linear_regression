@@ -7,6 +7,8 @@ By Trent Mullin <Trullin@umich.edu>
   <img src="assets/ITEM_Copper_Ore.png" alt="copper" width="20%">
 </p>
 
+## Table of Contents ##
+
 # Introduction #
 
 This project investigates the interconnectedness of commodity markets by focusing on the relationships between precious and industrial metals and energy resources. Specifically, it explores the question:
