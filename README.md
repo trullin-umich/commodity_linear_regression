@@ -7,7 +7,17 @@ By Trent Mullin <Trullin@umich.edu>
   <img src="assets/ITEM_Copper_Ore.png" alt="copper" width="20%">
 </p>
 
-## Table of Contents ##
+<details>
+  <summary><strong>Table of Contents</strong></summary>
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#data-cleaning-and-exploratory-data-analysis">Data Cleaning and Exploratory Data Analysis</a></li>
+    <li><a href="#framing-a-prediction-problem">Framing a Prediction Problem</a></li>
+    <li><a href="#baseline-model">Baseline Model</a></li>
+    <li><a href="#final-model">Final Model</a></li>
+  </ul>
+</details>
+
 
 # Introduction #
 
