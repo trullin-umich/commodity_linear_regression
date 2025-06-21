@@ -29,8 +29,8 @@
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <div class="home">
-<p>By Trent Mullin <a href="mailto:Trullin@umich.edu">Trullin@umich.edu</a></p>
-<h1 id="relations-between-commodities">Relations Between Commodities</h1>
+<p>By Trent Mullin <a href="mailto:Trullin@umich.edu">Trullin@umich.edu</a> | Github <a href="https://github.com/trullin-umich/commodity_linear_regression">Repo</a></p>
+<h1 id="predicting-the-price-of-gold-using-linear-regression">Predicting The Price of Gold Using Linear Regression</h1>
 <p align="center">
   <img src="assets/pngtree-pure-gold-ore-isolated-png-image_11536656.png" alt="gold" width="25%" style="margin-right: 10px;" />
   <img src="assets/silver-mineral-rock-BYdw9nA.png" alt="silver" width="30%" style="margin-right: 10px;" />
@@ -56,26 +56,646 @@
   <p><strong>Can the price of gold be predicted using the prices of other major commodities such as silver, copper, crude oil, and natural gas?</strong></p>
 </blockquote>
 
-<p>The dataset used, <code class="language-plaintext highlighter-rouge">commodities_12_22.csv</code>, contains <strong>3,259 rows</strong> of daily commodity price data spanning from June 2009 to December 2022. The columns relevant to this question include:</p>
+<p>The dataset used, <code class="language-plaintext highlighter-rouge">commodities_12_22.csv</code>, comes from <a href="https://www.kaggle.com/datasets/faseeh001/commoditiesinvestingcom">Kaggle</a> and contains <strong>3,259 rows</strong> of daily commodity price data spanning from January 2012 to December 2022. The columns relevant to this analysis include:</p>
 
 <ul>
   <li><strong>Gold</strong> – price per ounce in USD</li>
   <li><strong>Silver</strong> – price per ounce in USD</li>
   <li><strong>Copper</strong> – price per pound in USD</li>
   <li><strong>Crude Oil</strong> – price per barrel (WTI benchmark)</li>
-  <li><strong>Brent Oil</strong> – international oil benchmark price per barrel</li>
-  <li><strong>Natural Gas</strong> – Henry Hub spot price per MMBtu</li>
+  <li><strong>Brent Oil</strong> – price per barrel (Brent benchmark)</li>
+  <li><strong>Natural Gas</strong> – spot price per MMBtu</li>
+  <li><strong>Year</strong> – extracted from the date and treated as a categorical feature</li>
 </ul>
 
-<p>Understanding these relationships is valuable not only for economic forecasting and financial modeling, but also for traders, analysts, and policymakers who rely on accurate indicators of market movement and inflation-sensitive assets.</p>
+<p>While this is <strong>not a time-series analysis</strong>, the <code class="language-plaintext highlighter-rouge">Year</code> column is used categorically to capture possible year-over-year effects in a strictly linear-regression framework.</p>
 
+<hr />
+
+<h2 id="additional-data-sources">Additional Data Sources</h2>
+
+<p>To enrich the model, two extra datasets were merged into the primary data:</p>
+
+<h3 id="1-sp500-daily-closing-price">1. S&amp;P 500 (daily closing price)</h3>
+<p>Sourced from <a href="https://www.kaggle.com/datasets/gkitchen/s-and-p-500-spy">Kaggle: S&amp;P 500 SPY Daily Price History</a>, this completed dataset provides daily closing prices of the SPDR S&amp;P 500 ETF (Ticker: SPY) from January 1993 to June 2025</p>
+
+<p><strong>Added feature:</strong></p>
+<ul>
+  <li><strong>SPY_Close</strong> – daily closing price of the S&amp;P 500 ETF</li>
+</ul>
+
+<hr />
+
+<h3 id="2-us-macroeconomic-data-monthly">2. US Macroeconomic Data (monthly)</h3>
+<p>Acquired from <a href="https://www.kaggle.com/datasets/sarthmirashi07/us-macroeconomic-data">Kaggle: US Macroeconomic Data</a>, this dataset includes monthly indicators such as:</p>
+
+<ul>
+  <li>Mortgage rate (30-year fixed-rate)</li>
+  <li>Unemployment rate</li>
+  <li>Consumer Price Index (CPI)</li>
+  <li>Federal Funds rate</li>
+</ul>
+
+<p><strong>Added features:</strong></p>
+<ul>
+  <li><strong>Mortgage_Rate</strong>, <strong>Unemployment_Rate</strong>, <strong>CPI</strong>, <strong>Federal_Funds_Rate</strong>, etc.</li>
+</ul>
+
+<hr />
+
+<h2 id="why-it-matters">Why It Matters</h2>
+
+<p>By combining daily commodity prices with financial market data (S&amp;P 500) and monthly macroeconomic indicators, the model gains richer context. This allows us to explore whether broader economic dynamics — beyond commodity interrelationships — play a role in predicting gold prices using a <strong>linear regression</strong> framework.</p>
+
+<hr />
+
+<p><br /><br /></p>
 <h1 id="data-cleaning-and-exploratory-data-analysis">Data Cleaning and Exploratory Data Analysis</h1>
 
+<p>This section is split into two major parts:</p>
+<ol>
+  <li>Data Cleaning</li>
+  <li>Exploratory Data Analysis</li>
+</ol>
+
+<hr />
+
+<h3 id="data-cleaning">Data Cleaning</h3>
+
+<p>With our datasets ready, the first step is to ensure consistency across formats, handle missing values, and merge everything into one coherent structure.</p>
+
+<h4 id="formatting">Formatting</h4>
+
+<p>To facilitate merging, we extract time-based features from the date columns in each dataset:</p>
+
+<ul>
+  <li>From each row’s date, we generate <code class="language-plaintext highlighter-rouge">Year</code>, <code class="language-plaintext highlighter-rouge">Month</code>, and <code class="language-plaintext highlighter-rouge">Quarter</code>.</li>
+  <li>This helps align monthly macroeconomic indicators with daily commodity prices by providing a shared merge key.</li>
+</ul>
+
+<p>Even though this is <strong>not a time series analysis</strong>, having temporal markers improves interpretability and allows for grouped insights.</p>
+
+<h4 id="dataset-coverage">Dataset Coverage</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dataset</th>
+      <th>Range Start</th>
+      <th>Range End</th>
+      <th>Frequency</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Commodities</td>
+      <td>2012-01-03</td>
+      <td>2022-05-31</td>
+      <td>Daily</td>
+    </tr>
+    <tr>
+      <td>S&amp;P 500 (SPY)</td>
+      <td>1993-01-29</td>
+      <td>2025-05-31</td>
+      <td>Daily</td>
+    </tr>
+    <tr>
+      <td>Macroeconomic</td>
+      <td>1980-01-01</td>
+      <td>2022-05-01</td>
+      <td>Monthly</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Given that <strong>Commodities</strong> is our primary dataset (and the prediction target), we perform all merges in a way that <strong>preserves its rows</strong>.</p>
+
+<hr />
+
+<h4 id="merging-steps">Merging Steps</h4>
+
+<ul>
+  <li>
+    <p><strong>Commodities + S&amp;P 500</strong>:<br />
+We merge in the daily S&amp;P 500 closing prices using an inner join on the <code class="language-plaintext highlighter-rouge">Date</code>. The <code class="language-plaintext highlighter-rouge">Close</code> column is renamed to <code class="language-plaintext highlighter-rouge">S&amp;P500</code> for clarity.</p>
+  </li>
+  <li>
+    <p><strong>Commodities + Macroeconomic Indicators</strong>:<br />
+Since macro data is monthly, we join on both <code class="language-plaintext highlighter-rouge">Year</code> and <code class="language-plaintext highlighter-rouge">Month</code>. This means each daily row within a month gets the same macro features, producing a “stairstep” pattern in time series plots — still useful for regression.</p>
+  </li>
+</ul>
+
+<hr />
+
+<h4 id="imputation">Imputation</h4>
+
+<ul>
+  <li>First, we <strong>snip off the ends</strong> of the data range that have missing values across multiple columns — only keeping rows 11 through 2734.</li>
+  <li>For the rest, we apply <strong>polynomial interpolation</strong>, which fills in missing values while preserving trends better than forward-filling.</li>
+</ul>
+
+<hr />
+
+<p>After cleaning, our final dataset spans:
+<strong><code class="language-plaintext highlighter-rouge">2012-01-03</code> to <code class="language-plaintext highlighter-rouge">2022-05-31</code></strong>, with all relevant features merged and imputed.</p>
+
+<hr />
+
+<h3 id="sample-of-final-cleaned-dataset">Sample of Final Cleaned Dataset</h3>
+
+<p>To preview what our cleaned and merged data looks like, here’s a sample:</p>
+
+<pre>
+
+| Date       |   Crude Oil |   Brent Oil |   Natural Gas |    Gold |   Silver |   Copper |   Year |   Month |   Quarter |   S&amp;P500 |     CPI |   Mortgage_rate |   Unemp_rate |   NASDAQ |   disposable_income |   Personal_consumption_expenditure |   personal_savings |
+|:-----------|------------:|------------:|--------------:|--------:|---------:|---------:|-------:|--------:|----------:|---------:|--------:|----------------:|-------------:|---------:|--------------------:|-----------------------------------:|-------------------:|
+| 2022-05-31 |      114.67 |     115.6   |         8.145 | 1848.4  |   21.688 |   4.296  |   2022 |       5 |         2 |  395.224 | 291.474 |            5.23 |          3.6 |  11829.7 |             15144.8 |                            16954.5 |                5.4 |
+| 2022-05-30 |      117.61 |     117.6   |         8.686 | 1855.4  |   21.927 |   4.334  |   2022 |       5 |         2 |  405.897 | 291.474 |            5.23 |          3.6 |  11829.7 |             15144.8 |                            16954.5 |                5.4 |
+| 2022-05-29 |      115.61 |     120.147 |         8.815 | 1847.65 |   22.054 |   4.3232 |   2022 |       5 |         2 |  405.042 | 291.474 |            5.23 |          3.6 |  11829.7 |             15144.8 |                            16954.5 |                5.4 |
+| 2022-05-27 |      115.07 |     119.43  |         8.727 | 1857.3  |   22.138 |   4.3065 |   2022 |       5 |         2 |  397.454 | 291.474 |            5.23 |          3.6 |  11829.7 |             15144.8 |                            16954.5 |                5.4 |
+| 2022-05-26 |      114.09 |     114.17  |         8.908 | 1853.9  |   21.965 |   4.259  |   2022 |       5 |         2 |  387.931 | 291.474 |            5.23 |          3.6 |  11829.7 |             15144.8 |                            16954.5 |                5.4 |
+
+</pre>
+
+<h2 id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+
+<h3 id="univariate-analysis">Univariate Analysis</h3>
+
+<p>To understand how commodity prices behave individually over time, we begin by <strong>standardizing each variable using Z-scores</strong>. This transformation allows us to examine all commodities on a <strong>common scale</strong>, making it easier to identify patterns, deviations, and relative volatility across time.</p>
+
+<h4 id="z-scored-commodity-prices-over-time">Z-Scored Commodity Prices Over Time</h4>
+
+<iframe src="assets/zscore_commodities.html" width="800" height="400" frameborder="0"></iframe>
+
+<p>The plot above illustrates how each commodity’s price deviates from its mean across the observation period. This visualization enables direct comparison of <strong>volatility</strong> and <strong>timing of peaks and troughs</strong> between commodities like gold, silver, crude oil, and others.</p>
+
+<hr />
+
+<p>To further break down how each commodity behaves within a given year, we construct <strong>Z-scored box plots by year</strong>, giving us a clearer picture of <strong>intra-annual variability</strong> and the presence of outliers.</p>
+
+<h4 id="annual-z-score-box-plots-by-commodity">Annual Z-Score Box Plots by Commodity</h4>
+
+<iframe src="assets/zscore_by_commodities.html" width="800" height="400" frameborder="0"></iframe>
+
+<p>These box plots serve several purposes:</p>
+
+<ul>
+  <li><strong>Box height</strong> indicates variability: taller boxes suggest greater price fluctuations within that year.</li>
+  <li><strong>Outliers</strong> signal extreme deviations that may be linked to macroeconomic or geopolitical shocks.</li>
+  <li><strong>Color consistency across boxes</strong> (each color represents a year) lets us trace the <strong>relative behavior of different commodities in the same year</strong>.</li>
+</ul>
+
+<p>Taken together, these views give insight into both the <strong>overall trends</strong> and <strong>short-term fluctuations</strong> of commodity prices over time — laying a strong foundation for identifying potential predictive relationships in later multivariate modeling.</p>
+
+<h4 id="bivariate-analysis">Bivariate Analysis</h4>
+
+<p>To begin our bivariate analysis, we examine the <strong>pairwise relationships between gold and other major commodities</strong>. For clarity, we standardize all prices using <strong>Z-scores</strong>, placing them on the same scale to better visualize their movements and correlations.</p>
+
+<p>This approach allows us to assess which commodities tend to move together with gold and could therefore hold predictive value in our regression model. We observe a clear divergence between <strong>metal commodities</strong> and <strong>energy commodities</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Commodity</th>
+      <th>Correlation with Gold</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Silver</td>
+      <td><strong>0.74</strong></td>
+    </tr>
+    <tr>
+      <td>Copper</td>
+      <td><strong>0.71</strong></td>
+    </tr>
+    <tr>
+      <td>Crude Oil</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <td>Brent Oil</td>
+      <td>0.21</td>
+    </tr>
+    <tr>
+      <td>Natural Gas</td>
+      <td>0.18</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Metals exhibit strong positive correlation with gold, suggesting similar market drivers. In contrast, energy commodities display more independent behavior, hinting at different underlying factors (e.g., supply chain shocks, weather).</p>
+
+<h4 id="commodity-vs-gold-scatter-plots-with-trendlines">Commodity vs Gold (Scatter Plots with Trendlines)</h4>
+
+<iframe src="assets/crude_oil_vs_gold.html" width="800" height="400" frameborder="0"></iframe>
+
+<iframe src="assets/brent_oil_vs_gold.html" width="800" height="400" frameborder="0"></iframe>
+
+<iframe src="assets/natural_gas_vs_gold.html" width="800" height="400" frameborder="0"></iframe>
+
+<iframe src="assets/silver_vs_gold.html" width="800" height="400" frameborder="0"></iframe>
+
+<iframe src="assets/copper_vs_gold.html" width="800" height="400" frameborder="0"></iframe>
+
+<hr />
+
+<p>We then expand our analysis to <strong>macroeconomic and market indicators</strong>. While these aren’t commodities, they often correlate with gold due to its use as an <strong>inflation hedge</strong> and <strong>market risk asset</strong>.</p>
+
+<p>We Z-score each variable and overlay it with gold’s movement to reveal temporal similarities.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Macro Variable</th>
+      <th>Correlation with Gold</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>S&amp;P 500</td>
+      <td><strong>0.56</strong></td>
+    </tr>
+    <tr>
+      <td>NASDAQ</td>
+      <td><strong>0.62</strong></td>
+    </tr>
+    <tr>
+      <td>CPI (Consumer Price Index)</td>
+      <td><strong>0.56</strong></td>
+    </tr>
+    <tr>
+      <td>Mortgage Rate</td>
+      <td><strong>–0.60</strong></td>
+    </tr>
+    <tr>
+      <td>Unemployment Rate</td>
+      <td>0.36</td>
+    </tr>
+    <tr>
+      <td>Disposable Income</td>
+      <td>0.47</td>
+    </tr>
+    <tr>
+      <td>Personal Consumption Expenditure (PCE)</td>
+      <td>0.44</td>
+    </tr>
+    <tr>
+      <td>Personal Savings</td>
+      <td>0.43</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="gold-vs-macroeconomic-indicators-z-scored-line-plot">Gold vs Macroeconomic Indicators (Z-Scored Line Plot)</h4>
+
+<iframe src="assets/gold_and_macro_trends.html" width="800" height="400" frameborder="0"></iframe>
+
+<p>These relationships reinforce gold’s <strong>macroeconomic sensitivity</strong>: it moves in tandem with equity markets and inflation metrics, but inversely with mortgage rates — a classic indicator of risk aversion and monetary conditions.</p>
+
+<h4 id="interesting-aggregates">Interesting Aggregates</h4>
+
+<p>In this section, we explore aggregated views of the data that may reveal broader trends not immediately obvious in daily fluctuations.</p>
+
+<h4 id="gold-vs-commodity-index">Gold vs. Commodity Index</h4>
+
+<p>One particularly insightful aggregate involved constructing a <strong>composite commodity index</strong> essentially an average of the Z-scores of the several non-gold commodities. By comparing this index against the Z-score of gold over time, we can investigate whether gold tends to move in sync with the broader commodity market.</p>
+
+<iframe src="assets/gold_vs_commodity_index.html" width="800" height="400" frameborder="0"></iframe>
+
+<p>Interestingly, although some individual energy commodities (like crude oil and natural gas) had low pairwise correlations with gold, the overall commodity index still tracks closely with gold in some periods. This reinforces the idea that gold may act as a broad economic indicator or hedge, especially when averaged trends of multiple markets are considered.</p>
+
+<h4 id="yearly-commodity-averages">Yearly Commodity Averages</h4>
+
+<p>As a second aggregate, we compute the <strong>annual mean values</strong> of each commodity. This allows us to observe long-term trends and determine if certain years show simultaneous peaks or dips across multiple commodities—including gold. When Z-scores for gold are high in a given year, we can see if other commodities behave similarly, suggesting common macroeconomic influences (e.g., inflation, crises, or growth cycles).</p>
+
+<p>Below is the pivot table showing yearly averages of each commodity (Z-scored):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Year</th>
+      <th>Brent Oil</th>
+      <th>Copper</th>
+      <th>Crude Oil</th>
+      <th>Gold</th>
+      <th>Natural Gas</th>
+      <th>Silver</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2012</td>
+      <td>111.70</td>
+      <td>3.61</td>
+      <td>94.15</td>
+      <td>0.87</td>
+      <td>2.83</td>
+      <td>31.15</td>
+    </tr>
+    <tr>
+      <td>2013</td>
+      <td>108.66</td>
+      <td>3.34</td>
+      <td>98.05</td>
+      <td>-0.18</td>
+      <td>3.73</td>
+      <td>23.71</td>
+    </tr>
+    <tr>
+      <td>2014</td>
+      <td>99.34</td>
+      <td>3.12</td>
+      <td>92.82</td>
+      <td>-0.47</td>
+      <td>4.26</td>
+      <td>19.04</td>
+    </tr>
+    <tr>
+      <td>2015</td>
+      <td>53.66</td>
+      <td>2.49</td>
+      <td>48.88</td>
+      <td>-1.14</td>
+      <td>2.63</td>
+      <td>15.71</td>
+    </tr>
+    <tr>
+      <td>2016</td>
+      <td>45.12</td>
+      <td>2.24</td>
+      <td>43.95</td>
+      <td>-0.80</td>
+      <td>2.55</td>
+      <td>17.16</td>
+    </tr>
+    <tr>
+      <td>2017</td>
+      <td>54.78</td>
+      <td>2.89</td>
+      <td>52.43</td>
+      <td>-0.77</td>
+      <td>3.02</td>
+      <td>17.08</td>
+    </tr>
+    <tr>
+      <td>2018</td>
+      <td>71.61</td>
+      <td>3.04</td>
+      <td>55.19</td>
+      <td>-0.72</td>
+      <td>3.07</td>
+      <td>15.73</td>
+    </tr>
+    <tr>
+      <td>2019</td>
+      <td>64.15</td>
+      <td>2.78</td>
+      <td>52.82</td>
+      <td>-0.23</td>
+      <td>2.53</td>
+      <td>16.23</td>
+    </tr>
+    <tr>
+      <td>2020</td>
+      <td>43.40</td>
+      <td>2.86</td>
+      <td>43.79</td>
+      <td>1.31</td>
+      <td>2.13</td>
+      <td>20.69</td>
+    </tr>
+    <tr>
+      <td>2021</td>
+      <td>70.86</td>
+      <td>4.21</td>
+      <td>63.13</td>
+      <td>1.43</td>
+      <td>3.72</td>
+      <td>25.21</td>
+    </tr>
+    <tr>
+      <td>2022</td>
+      <td>102.04</td>
+      <td>4.50</td>
+      <td>95.15</td>
+      <td>1.74</td>
+      <td>5.72</td>
+      <td>23.74</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>These aggregates offer a structured way to examine multi-commodity behavior over time and can help identify years where gold prices diverged significantly from the rest: potentially revealing unique macroeconomic pressures or investor sentiment shifts.</p>
+
+<p><br /><br /></p>
 <h1 id="framing-a-prediction-problem">Framing a Prediction Problem</h1>
+
+<p>Predicting Gold Price from All Features?</p>
+
+<p>After thoroughly exploring the individual and paired relationships among commodities and macroeconomic variables, we now take the next step: <strong>building a predictive model</strong> to estimate the <strong>raw price of gold</strong>.</p>
+
+<p>Our prediction problem is framed as a <strong>regression task</strong>. The response variable is the <strong>non-transformed gold price</strong>, and our goal is to estimate it using the full set of features available in the cleaned dataset — including both <strong>commodity prices</strong> and <strong>macroeconomic indicators</strong>.</p>
+
+<p>For this first model, we are taking a <strong>naive linear regression approach</strong>, using <strong>all columns except the target (gold)</strong> as features. While simple, this model allows us to:</p>
+<ul>
+  <li>Quantify the <strong>direction and strength of influence</strong> each feature has on gold.</li>
+  <li>Serve as a <strong>baseline</strong> to compare future, more sophisticated models.</li>
+  <li>Stay fully interpretable — each weight can be directly examined.</li>
+</ul>
+
+<p>Because we are focused on <strong>prediction</strong>, we evaluate the model using <strong>Mean Squared Error (MSE)</strong>. MSE is appropriate here because:</p>
+<ul>
+  <li>We care about penalizing large deviations in prediction.</li>
+  <li>The target is continuous, and we’re not interested in thresholds or classification boundaries.</li>
+  <li>MSE is the standard loss function minimized by linear regression.</li>
+</ul>
+
+<p>This model does not attempt to be temporally aware or account for multicollinearity — it is a first pass that helps translate earlier insights into action. This leads us into the design of the baseline model.</p>
 
 <h1 id="baseline-model">Baseline Model</h1>
 
+<p>In this section, I construct a simple baseline predictive model using <code class="language-plaintext highlighter-rouge">sklearn</code>. My goal is to predict the <strong>price of gold</strong> using all available features — including both commodity prices and macroeconomic indicators — as inputs.</p>
+
+<p>To do this, I use a train-test split to evaluate model generalization and build a linear regression pipeline to fit the data and assess performance.</p>
+
+<h3 id="model-details">Model Details</h3>
+
+<ul>
+  <li><strong>Model Type</strong>: Linear Regression (no regularization)</li>
+  <li><strong>Target Variable</strong>: Gold price (in dollars)</li>
+  <li><strong>Prediction Goal</strong>: Regression</li>
+  <li><strong>Model Purpose</strong>: Predictive</li>
+</ul>
+
+<h3 id="feature-summary">Feature Summary</h3>
+
+<p>All features included in the model are numerical, so no encoding was required. Specifically:</p>
+
+<ul>
+  <li><strong>Quantitative features</strong>: All (commodity and macroeconomic values are continuous)</li>
+  <li><strong>Ordinal/nominal features</strong>: None at this stage</li>
+</ul>
+
+<blockquote>
+  <p>In future versions of this model, I could explore adding temporal variables (e.g., month, day of week), encoded using one-hot encoding to test for seasonal or cyclical effects — though I expect their influence would be limited in a linear model.</p>
+</blockquote>
+
+<h3 id="model-evaluation">Model Evaluation</h3>
+
+<p>I split the dataset into 80% training and 20% testing subsets. I then trained a linear regression model and evaluated performance using <strong>Mean Squared Error (MSE)</strong> and the <strong>coefficient of determination (R²)</strong>:</p>
+
+<ul>
+  <li><strong>Train MSE</strong>: <strong>2218.64</strong></li>
+  <li><strong>Test MSE</strong>: <strong>2232.93</strong></li>
+  <li><strong>Train R²</strong>: <strong>0.964</strong></li>
+  <li><strong>Test R²</strong>: <strong>0.967</strong></li>
+</ul>
+
+<p>This corresponds to an approximate Root Mean Squared Error (RMSE) of <strong>$47</strong>, which provides a rough estimate of the model’s average prediction error in dollars.</p>
+
+<h3 id="interpretation">Interpretation</h3>
+
+<p>The close alignment between training and test MSE and R² indicates that the model generalizes well without significant overfitting. With R² values above 0.93, the model is able to explain over 93% of the variance in gold prices — a strong result for a simple linear approach.</p>
+
+<p>However, the absolute magnitude of the prediction error suggests room for improvement. To enhance performance, I may consider:</p>
+
+<ul>
+  <li>Adding regularization (e.g., Ridge or Lasso regression)</li>
+  <li>Engineering new features (e.g., interactions, lags, or rolling averages)</li>
+  <li>Trying nonlinear models (e.g., decision trees or ensembles)</li>
+  <li>Performing feature selection to reduce multicollinearity and noise,</li>
+</ul>
+
+<p>A peak at the coefficients of this simple model shows</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Feature</th>
+      <th style="text-align: right">Coefficient</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Personal_consumption_expenditure</td>
+      <td style="text-align: right">657.164</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">personal_savings</td>
+      <td style="text-align: right">350.501</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Year</td>
+      <td style="text-align: right">146.946</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Silver</td>
+      <td style="text-align: right">139.222</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Crude Oil</td>
+      <td style="text-align: right">49.7131</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Unemp_rate</td>
+      <td style="text-align: right">16.8078</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Brent Oil</td>
+      <td style="text-align: right">13.4307</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Month</td>
+      <td style="text-align: right">8.14651</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Quarter</td>
+      <td style="text-align: right">6.70036</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Copper</td>
+      <td style="text-align: right">-7.57216</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Natural Gas</td>
+      <td style="text-align: right">-20.0017</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">S&amp;P500</td>
+      <td style="text-align: right">-38.5485</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Mortgage_rate</td>
+      <td style="text-align: right">-56.6144</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CPI</td>
+      <td style="text-align: right">-97.1423</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NASDAQ</td>
+      <td style="text-align: right">-122.175</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">disposable_income</td>
+      <td style="text-align: right">-547.608</td>
+    </tr>
+  </tbody>
+</table>
+
 <h1 id="final-model">Final Model</h1>
+
+<p>To refine the baseline linear regression, I implemented <strong>Lasso Regression</strong>, a linear model with <strong>L1 regularization</strong>. This technique penalizes the absolute value of coefficients, encouraging sparsity in the model by reducing less important feature weights to zero. It is especially useful when dealing with potential multicollinearity or when aiming for a more interpretable model.</p>
+
+<h3 id="model-details-1">Model Details</h3>
+
+<ul>
+  <li><strong>Model Type</strong>: Lasso Regression</li>
+  <li><strong>Regularization</strong>: L1 (automatically shrinks some coefficients to zero)</li>
+  <li><strong>Target Variable</strong>: Gold price (in dollars)</li>
+  <li><strong>Features Used</strong>: All available quantitative inputs, including:
+    <ul>
+      <li>Commodity prices (Crude Oil, Copper, Silver, etc.)</li>
+      <li>Macroeconomic indicators (CPI, S&amp;P 500, NASDAQ, etc.)</li>
+    </ul>
+  </li>
+  <li><strong>Prediction Type</strong>: Regression</li>
+  <li><strong>Model Purpose</strong>: Predictive</li>
+</ul>
+
+<h3 id="performance-metrics">Performance Metrics</h3>
+
+<ul>
+  <li><strong>Train MSE</strong>: <strong>2299.85</strong></li>
+  <li><strong>Test MSE</strong>: <strong>2151.34</strong></li>
+  <li><strong>Train R²</strong>: <strong>0.964</strong></li>
+  <li><strong>Test R²</strong>: <strong>0.965</strong></li>
+</ul>
+
+<blockquote>
+  <p>This corresponds to an average test prediction error (RMSE) of approximately <strong>$46.37</strong>, slightly improved from the unregularized model.</p>
+</blockquote>
+
+<h3 id="interpretation-1">Interpretation</h3>
+
+<p>Interestingly, the Lasso model resulted in a <strong>lower test MSE</strong> than the training MSE, which can sometimes indicate:</p>
+<ul>
+  <li>The model generalized better due to regularization.</li>
+  <li>The test set happened to be slightly “easier” to predict than the training set.</li>
+</ul>
+
+<p>The <strong>R² values are strong and consistent (~0.965)</strong>, indicating the model explains ~96.5% of the variance in gold prices — a very solid fit for a linear model.</p>
+
+<h3 id="coefficient-analysis">Coefficient Analysis</h3>
+
+<p>The Lasso regression also revealed which features are most predictive of gold price. Many less informative variables had their weights shrunk to zero, improving interpretability. Below is a bar chart showing the magnitude of non-zero coefficients:</p>
+
+<p align="center">
+    <img src="assets/bar.png" alt="copper" width="100%" />
+</p>
+
+<p>I think that we can make some improvements, one of the main things that I would like to try here is making a pipeline thats able to automate the process and use cross validation and hyperparameters to calculate the best version that minimizes our error creating a better model, while still being weary of not overfitting</p>
 
 
 
