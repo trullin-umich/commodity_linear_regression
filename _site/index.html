@@ -695,7 +695,80 @@ Since macro data is monthly, we join on both <code class="language-plaintext hig
     <img src="assets/bar.png" alt="copper" width="100%" />
 </p>
 
-<p>I think that we can make some improvements, one of the main things that I would like to try here is making a pipeline thats able to automate the process and use cross validation and hyperparameters to calculate the best version that minimizes our error creating a better model, while still being weary of not overfitting</p>
+<h2 id="final-model-evaluation--conclusion">Final Model Evaluation &amp; Conclusion</h2>
+
+<p>To conclude the modeling process, I constructed a comprehensive pipeline that leveraged <code class="language-plaintext highlighter-rouge">GridSearchCV</code> and cross-validation to compare several types of regressors and their hyperparameters. The goal was to identify the best-performing model for predicting gold prices using all available features — including commodity prices and macroeconomic indicators.</p>
+
+<h3 id="models-compared">Models Compared</h3>
+
+<p>The final evaluation included:</p>
+
+<ul>
+  <li><strong>Ridge Regression</strong>: A regularized linear model that helps mitigate overfitting by shrinking coefficients.</li>
+  <li><strong>Random Forest Regressor</strong>: An ensemble of decision trees that performs well on non-linear relationships and offers robustness to noise.</li>
+  <li><strong>Multi-layer Perceptron (MLP)</strong>: A simple neural network regressor capable of modeling complex, non-linear interactions between features.</li>
+</ul>
+
+<h3 id="final-results">Final Results</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Best Parameters</th>
+      <th>Test MSE</th>
+      <th>Test R²</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ridge</td>
+      <td><code class="language-plaintext highlighter-rouge">alpha=0.0001</code></td>
+      <td><strong>2450.72</strong></td>
+      <td><strong>0.96</strong></td>
+    </tr>
+    <tr>
+      <td>Random Forest</td>
+      <td><code class="language-plaintext highlighter-rouge">alpha=0.0001, hidden_layer_sizes=(100,)</code></td>
+      <td><strong>325.02</strong></td>
+      <td><strong>1.00</strong></td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td><code class="language-plaintext highlighter-rouge">alpha=0.0001, hidden_layer_sizes=(100,)</code></td>
+      <td><strong>371.25</strong></td>
+      <td><strong>0.99</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="interpretation-2">Interpretation</h3>
+
+<ul>
+  <li>
+    <p><strong>Random Forest</strong> achieved the lowest test MSE and a perfect R² score, suggesting it captured the relationships in the data almost perfectly. However, perfect R² values can sometimes signal overfitting, particularly when feature space is large or highly correlated. More testing with unseen future data would help verify its generalizability.</p>
+  </li>
+  <li>
+    <p><strong>MLP Regressor</strong> also performed exceptionally well, slightly trailing Random Forest. Neural networks often require more tuning and data, but here it still achieved near-perfect accuracy with basic configuration.</p>
+  </li>
+  <li>
+    <p><strong>Ridge Regression</strong>, while not as performant as the others, still achieved strong predictive power (R² = 0.96). It remains a solid choice when interpretability and simplicity are prioritized, and the risk of overfitting must be kept low, MSE was higher though.</p>
+  </li>
+</ul>
+
+<h3 id="trade-offs--final-thoughts">Trade-Offs &amp; Final Thoughts</h3>
+
+<p>Each model offers different trade-offs:</p>
+
+<ul>
+  <li><strong>Random Forest</strong> provides superior accuracy and handles feature interactions well but lacks transparency and can be computationally intensive.</li>
+  <li><strong>MLP</strong> can model complex patterns but may require more careful tuning and larger datasets for consistent performance.</li>
+  <li><strong>Ridge Regression</strong> is fast and interpretable but limited to linear relationships.</li>
+</ul>
+
+<p>Ultimately, <strong>Random Forest</strong> stands out as the most accurate model in this scenario. However, future work should incorporate regularization checks, feature importance analysis, and potentially time-aware validation strategies to ensure stability and robustness in real-world forecasting.</p>
+
+<p>What would my model predict for the current gold price?</p>
 
 
 

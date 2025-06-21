@@ -407,5 +407,45 @@ The Lasso regression also revealed which features are most predictive of gold pr
     <img src="assets/bar.png" alt="copper" width="100%">
 </p>
 
-I think that we can make some improvements, one of the main things that I would like to try here is making a pipeline thats able to automate the process and use cross validation and hyperparameters to calculate the best version that minimizes our error creating a better model, while still being weary of not overfitting
+## Final Model Evaluation & Conclusion
+
+To conclude the modeling process, I constructed a comprehensive pipeline that leveraged `GridSearchCV` and cross-validation to compare several types of regressors and their hyperparameters. The goal was to identify the best-performing model for predicting gold prices using all available features — including commodity prices and macroeconomic indicators.
+
+### Models Compared
+
+The final evaluation included:
+
+- **Ridge Regression**: A regularized linear model that helps mitigate overfitting by shrinking coefficients.
+- **Random Forest Regressor**: An ensemble of decision trees that performs well on non-linear relationships and offers robustness to noise.
+- **Multi-layer Perceptron (MLP)**: A simple neural network regressor capable of modeling complex, non-linear interactions between features.
+
+### Final Results
+
+| Model         | Best Parameters                                        | Test MSE | Test R² |
+|---------------|--------------------------------------------------------|----------|---------|
+| Ridge         | `alpha=0.0001`                                         | **2450.72** | **0.96**  |
+| Random Forest | `alpha=0.0001, hidden_layer_sizes=(100,)`             | **325.02**  | **1.00**  |
+| MLP           | `alpha=0.0001, hidden_layer_sizes=(100,)`             | **371.25**  | **0.99**  |
+
+### Interpretation
+
+- **Random Forest** achieved the lowest test MSE and a perfect R² score, suggesting it captured the relationships in the data almost perfectly. However, perfect R² values can sometimes signal overfitting, particularly when feature space is large or highly correlated. More testing with unseen future data would help verify its generalizability.
+
+- **MLP Regressor** also performed exceptionally well, slightly trailing Random Forest. Neural networks often require more tuning and data, but here it still achieved near-perfect accuracy with basic configuration.
+
+- **Ridge Regression**, while not as performant as the others, still achieved strong predictive power (R² = 0.96). It remains a solid choice when interpretability and simplicity are prioritized, and the risk of overfitting must be kept low, MSE was higher though.
+
+### Trade-Offs & Final Thoughts
+
+Each model offers different trade-offs:
+
+- **Random Forest** provides superior accuracy and handles feature interactions well but lacks transparency and can be computationally intensive.
+- **MLP** can model complex patterns but may require more careful tuning and larger datasets for consistent performance.
+- **Ridge Regression** is fast and interpretable but limited to linear relationships.
+
+Ultimately, **Random Forest** stands out as the most accurate model in this scenario. However, future work should incorporate regularization checks, feature importance analysis, and potentially time-aware validation strategies to ensure stability and robustness in real-world forecasting.
+
+
+What would my model predict for the current gold price? 
+
 
