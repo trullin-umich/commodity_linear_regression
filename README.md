@@ -421,11 +421,11 @@ The final evaluation included:
 
 ### Final Results
 
-| Model         | Best Parameters                                        | Test MSE | Test R² |
-|---------------|--------------------------------------------------------|----------|---------|
-| Ridge         | `alpha=0.0001`                                         | **2450.72** | **0.96**  |
-| Random Forest | `alpha=0.0001, hidden_layer_sizes=(100,)`             | **325.02**  | **1.00**  |
-| MLP           | `alpha=0.0001, hidden_layer_sizes=(100,)`             | **371.25**  | **0.99**  |
+| Model         | Best Parameters                            | Test MSE | Test R² |
+|---------------|--------------------------------------------|---------:|:-------:|
+| Ridge         | `alpha=0.1`                                 |  2450.72 |  0.96   |
+| Random Forest | `max_depth=10, n_estimators=200`            | **325.02** | **0.99** |
+| MLP           | `alpha=0.001, hidden_layer_sizes=(100,)`    |   371.25 |  0.99   |
 
 ### Interpretation
 
